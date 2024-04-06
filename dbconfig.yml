@@ -1,0 +1,11 @@
+dev-mysql:
+  dialect: mysql
+  datasource: root:123456@tcp(127.0.0.1:3306)/chat?parseTime=true
+  dir: migrate/mysql
+  table: migrations
+
+pro-mysql:
+  dialect: mysql
+  datasource: root:123456@tcp(127.0.0.1:3306)/chat?parseTime=true
+  dir: migrate/mysql
+  table: migrations
