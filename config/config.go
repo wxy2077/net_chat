@@ -14,6 +14,8 @@ type Runtime struct {
 	HttpPort       int64
 	Mode           string
 	LogLevel       string
+	JwtPublicKey   string
+	JwtPrivateKey  string
 	JaegerHostPort string
 	ServerName     string
 }
