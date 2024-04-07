@@ -6,6 +6,7 @@ import (
 	"net-chat/config"
 	"net-chat/global"
 	"net-chat/initialize"
+	"net-chat/pkg"
 	"net/http"
 	"time"
 )
@@ -28,6 +29,10 @@ func init() {
 
 	global.Log = initialize.InitLogger(global.Config.Runtime.LogLevel)
 	global.DB = initialize.GormMysql(global.Config.MainMySQL)
+
+	initialize.InitWsHub()
+
+	pkg.PwdJwt.LoadConfig(global.Config.Runtime.JwtPrivateKey, global.Config.Runtime.JwtPublicKey)
 
 }
 

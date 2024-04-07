@@ -25,6 +25,7 @@ func Engin() *gin.Engine {
 	apiV1.Use(middleware.PanicHandler())
 
 	router.InitUserRouter(apiV1)
+	router.InitWsRouter(apiV1)
 
 	return engine
 }

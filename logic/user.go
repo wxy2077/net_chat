@@ -1,10 +1,13 @@
 package logic
 
 import (
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	model "net-chat/model"
 	"net-chat/pkg"
+	"time"
 )
 
 type UserLogic interface {
@@ -47,11 +50,17 @@ func (u *userLogic) Login(db *gorm.DB, account, password string) (token string, 
 		return "", errors.New(err.Error())
 	}
 
-	// TODO
-	// 处理密码散列校验
-	// 生成token
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", errors.New("账号或者密码错误")
+	}
 
-	return "", err
+	token, _ = pkg.PwdJwt.GenerateJwtToken(jwt.MapClaims{
+		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(),
+		"uid":   user.ID,
+		"scope": "[*]",
+	})
+
+	return token, nil
 }
 
 func (u *userLogic) UserInfo(db *gorm.DB, id int64) (user *model.User, err error) {

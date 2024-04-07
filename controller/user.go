@@ -9,6 +9,29 @@ import (
 	"net/http"
 )
 
+func Login(c *gin.Context) {
+	var (
+		r = pkg.NewResponse(c)
+	)
+	req := struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		r.Fail(err)
+		return
+	}
+	//token, err := logic.NewUserLogic().Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
+	//if err != nil {
+	//	r.Fail(err)
+	//	return
+	//}
+
+	r.OK(http.StatusOK, req)
+
+}
+
 func UserInfo(c *gin.Context) {
 	var (
 		r = pkg.NewResponse(c)
