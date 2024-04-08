@@ -22,29 +22,23 @@ func Login(c *gin.Context) {
 		r.Fail(err)
 		return
 	}
-	//token, err := logic.NewUserLogic().Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
-	//if err != nil {
-	//	r.Fail(err)
-	//	return
-	//}
+	token, err := logic.NewUserLogic().Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
+	if err != nil {
+		r.Fail(err)
+		return
+	}
 
-	r.OK(http.StatusOK, req)
+	r.OK(http.StatusOK, token)
 
 }
 
 func UserInfo(c *gin.Context) {
 	var (
-		r = pkg.NewResponse(c)
+		r   = pkg.NewResponse(c)
+		uid = c.GetInt64(global.UserID)
 	)
-	req := struct {
-		ID int64 `json:"id" form:"id" binding:"required"`
-	}{}
 
-	if err := c.ShouldBindQuery(&req); err != nil {
-		r.Fail(err)
-		return
-	}
-	user, err := logic.NewUserLogic().UserInfo(global.DB.WithContext(c.Request.Context()), req.ID)
+	user, err := logic.NewUserLogic().UserInfo(global.DB.WithContext(c.Request.Context()), uid)
 	if err != nil {
 		r.Fail(err)
 		return

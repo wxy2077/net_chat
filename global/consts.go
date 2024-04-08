@@ -8,4 +8,6 @@ const (
 
 	OpenTraceTraceID = "X-Trace-ID"
 	OpenTraceSpanID  = "X-Span-ID"
+
+	UserID = "uid"
 )

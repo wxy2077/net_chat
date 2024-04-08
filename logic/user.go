@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"net-chat/global"
 	model "net-chat/model"
 	"net-chat/pkg"
 	"time"
@@ -23,12 +24,7 @@ type UserLogic interface {
 	// PreloadUserDep 预加载查询出所有的部门
 	PreloadUserDep(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination)
 
-	// 同上
 	PreloadUserDeps(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination)
-
-	// 原生SQL查询
-
-	// 其他业务逻辑方法....
 }
 
 type userLogic struct {
@@ -43,7 +39,7 @@ func NewUserLogic() UserLogic {
 func (u *userLogic) Login(db *gorm.DB, account, password string) (token string, err error) {
 
 	user := new(model.User)
-	if err := user.First(db, &model.FilterUser{
+	if err = user.First(db, &model.FilterUser{
 		Account: account,
 	}, "id,account,password"); err != nil {
 		// 错误返回可以再次进行封装
@@ -55,9 +51,9 @@ func (u *userLogic) Login(db *gorm.DB, account, password string) (token string, 
 	}
 
 	token, _ = pkg.PwdJwt.GenerateJwtToken(jwt.MapClaims{
-		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(),
-		"uid":   user.ID,
-		"scope": "[*]",
+		"exp":         time.Now().Add(time.Hour * 24 * 365).Unix(),
+		global.UserID: user.ID,
+		"scope":       "[*]",
 	})
 
 	return token, nil
@@ -67,7 +63,7 @@ func (u *userLogic) UserInfo(db *gorm.DB, id int64) (user *model.User, err error
 	user = new(model.User)
 	if err = user.First(db, &model.FilterUser{
 		ID: id,
-	}, "id,account,password"); err != nil {
+	}); err != nil {
 		return nil, errors.New(err.Error())
 	}
 	return user, nil

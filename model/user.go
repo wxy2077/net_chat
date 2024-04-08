@@ -6,9 +6,6 @@ import (
 	"net-chat/pkg"
 )
 
-// User 使用sql-migrate时,不需要关心gorm tag的写法
-// 以下可以适用gorm自带迁移工具执行迁移
-// 生成的建表SQL和 02_migrate/mysql/20220626_init.sql下的`users`表SQL一致。
 type User struct {
 	ID       int64       `gorm:"primaryKey" json:"id,omitempty"`
 	Account  string      `gorm:"column:account;type:varchar(191);default'';comment:账号;" json:"account,omitempty"`
@@ -26,7 +23,7 @@ type User struct {
 	DepartmentUser []*DepartmentUser `gorm:"foreignKey:UserID;references:ID" json:"department_user,omitempty"`
 
 	// 逻辑外间 多对多 同上
-	Department []*Department `gorm:"many2many:department_users;foreignKey:ID;joinForeignKey:UserID;References:ID;JoinReferences:DepID;" json:"departments"`
+	Department []*Department `gorm:"many2many:department_users;foreignKey:ID;joinForeignKey:UserID;References:ID;JoinReferences:DepID;" json:"departments,omitempty"`
 }
 
 func (u *User) TableName() string {
@@ -62,16 +59,16 @@ func (u *User) First(db *gorm.DB, filter *FilterUser, columns ...string) error {
 		db = db.Select(columns)
 	}
 	if filter.ID > 0 {
-		db = db.Where("id", filter.ID)
+		db = db.Where("id = ?", filter.ID)
 	}
 	if filter.Account != "" {
-		db = db.Where("account", filter.Account)
+		db = db.Where("account = ?", filter.Account)
 	}
 	if filter.Username.Valid {
-		db = db.Where("username", filter.Username.String)
+		db = db.Where("username = ?", filter.Username.String)
 	}
 	if filter.Phone != "" {
-		db = db.Where("phone", filter.Phone)
+		db = db.Where("phone = ?", filter.Phone)
 	}
 	return db.First(u).Error
 }
