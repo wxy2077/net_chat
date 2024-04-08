@@ -7,5 +7,7 @@ import (
 
 func WsConnect(c *gin.Context) {
 
-	ws.ServeWs(c.Writer, c.Request, 1)
+	uid := c.GetInt64("uid")
+
+	ws.ServeWs(c.Writer, c.Request, uid)
 }

@@ -36,7 +36,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request, uid int64) {
 		return
 	}
 
-	fmt.Printf("connect to client %s\n", conn.RemoteAddr().String())
+	fmt.Printf("connect to client %s, uid:%d\n", conn.RemoteAddr().String(), uid)
 
 	//每来一个前端请求，就会创建一个client
 	client := &Client{
@@ -64,7 +64,7 @@ func (c *Client) read() {
 	defer func() {
 		//hub中注销client
 		HubServer.unregister <- c
-		global.Log.Infof("uid:%d-client %s disconnect", c.userID, c.conn.RemoteAddr().String())
+		//global.Log.Infof("uid:%d-client %s disconnect", c.userID, c.conn.RemoteAddr().String())
 		//关闭websocket管道
 		_ = c.conn.Close()
 	}()

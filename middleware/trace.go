@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
+	"io"
 	"net-chat/global"
 	"net/http"
 	"strings"
@@ -57,13 +58,17 @@ func tagRequest(span opentracing.Span, r *http.Request) {
 	span.SetTag("http.method", r.Method)
 	span.SetTag("http.content_type", r.Header.Get("Content-Type"))
 
-	//_ = r.ParseForm()
-	//body, _ := io.ReadAll(r.Body)
-	//
-	//span.LogKV(
-	//	"Params", r.Form.Encode(),
-	//	"Body", string(body),
-	//)
+	_ = r.ParseForm()
+	buf, _ := io.ReadAll(r.Body)
+
+	// 将请求体重新写入缓冲区
+	r.Body = io.NopCloser(bytes.NewBuffer(buf))
+
+	span.LogKV(
+		"Params", r.Form.Encode(),
+		"Body", string(buf),
+	)
+
 }
 
 func tagResponse(lrw *loggingResponseWriter, r *http.Request) {

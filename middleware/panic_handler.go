@@ -24,6 +24,7 @@ func PanicHandler() gin.HandlerFunc {
 					errResp["stack"] = strings.Split(e, "\n")
 				}
 				c.JSON(http.StatusOK, errResp)
+				return
 			}
 		}()
 		c.Next()

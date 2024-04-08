@@ -6,7 +6,7 @@ System:
 Runtime:
   ServerName: "net-chat"
   Mode: "debug"
-  LogLevel: "debug"
+  LogLevel: "info"
   HttpPort: 8081
   JwtPublicKey: ./runtime/private.pem
   JwtPrivateKey: ./runtime/public.pem
@@ -14,7 +14,7 @@ Runtime:
 
 MainMySQL:
   DNS: root:123456@tcp(127.0.0.1:3306)
-  Database: example
+  Database: chat
   MaxIDleConn: 100
   MaxOpenConn: 100
   MaxLifeTime: 1000
