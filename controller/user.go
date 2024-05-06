@@ -28,7 +28,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	r.OK(http.StatusOK, token)
+	r.OK(http.StatusOK, gin.H{"token": token})
 
 }
 

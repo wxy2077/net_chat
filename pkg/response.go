@@ -46,6 +46,6 @@ func (r *responderX) Fail(err error) {
 	r.c.JSON(200, gin.H{
 		"status":  500,
 		"success": false,
-		"error":   err.Error(),
+		"message": err.Error(),
 	})
 }

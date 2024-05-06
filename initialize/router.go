@@ -14,8 +14,9 @@ func Engin() *gin.Engine {
 	engine := gin.New()
 
 	engine.Use(gin.Recovery())
-	if gin.Mode() == gin.DebugMode {
+	if gin.Mode() != gin.ReleaseMode {
 		engine.Use(gin.Logger())
+		engine.Use(middleware.CORSMiddleware())
 	}
 
 	apiV1 := engine.Group(global.Config.System.PrefixUrl)
@@ -23,6 +24,11 @@ func Engin() *gin.Engine {
 	apiV1.Use(middleware.TraceMiddleware())
 
 	apiV1.Use(middleware.PanicHandler())
+
+	apiV1.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "pong"})
+		return
+	})
 
 	router.InitUserRouter(apiV1)
 	router.InitWsRouter(apiV1)

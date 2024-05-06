@@ -45,11 +45,11 @@ CREATE TABLE IF NOT EXISTS `department_users`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
-INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (1, 'hanli', NULL, '韩立', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (2, 'mark', NULL, '马克', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (3, 'qi', NULL, '阿七', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (4, 'allen', NULL, '艾伦', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (5, 'batman', NULL, '布鲁斯', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (1, 'hanli', '$2a$10$YXWtf0mwdh1yEC3fH22BieiItD/o02bVIxbPhY0pIg9d4i0eTswIu', '韩立', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (2, 'mark', '$2a$10$YXWtf0mwdh1yEC3fH22BieiItD/o02bVIxbPhY0pIg9d4i0eTswIu', '马克', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (3, 'qi', '$2a$10$YXWtf0mwdh1yEC3fH22BieiItD/o02bVIxbPhY0pIg9d4i0eTswIu', '阿七', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (4, 'allen', '$2a$10$YXWtf0mwdh1yEC3fH22BieiItD/o02bVIxbPhY0pIg9d4i0eTswIu', '艾伦', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users`(`id`, `account`, `password`, `username`, `phone`, `avatar`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES (5, 'batman', '$2a$10$YXWtf0mwdh1yEC3fH22BieiItD/o02bVIxbPhY0pIg9d4i0eTswIu', '布鲁斯', NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `departments`(`id`, `dep_id`, `title`, `parent_id`, `level`, `path`, `created_at`, `updated_at`, `deleted_at`) VALUES (1, 1, '电影', '0', '0', '/1', NULL, NULL, NULL);
 INSERT INTO `departments`(`id`, `dep_id`, `title`, `parent_id`, `level`, `path`, `created_at`, `updated_at`, `deleted_at`) VALUES (2, 2, '动漫', '0', '0', '/2', NULL, NULL, NULL);
