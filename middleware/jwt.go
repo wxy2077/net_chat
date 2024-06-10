@@ -13,6 +13,9 @@ func JwtMiddleware() gin.HandlerFunc {
 
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
+			token = c.Query("token")
+		}
+		if token == "" {
 			pkg.NewResponse(c).Fail(errors.New("请先登录"))
 			c.Abort()
 			return

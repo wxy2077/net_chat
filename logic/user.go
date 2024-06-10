@@ -42,8 +42,7 @@ func (u *userLogic) Login(db *gorm.DB, account, password string) (token string, 
 	if err = user.First(db, &model.FilterUser{
 		Account: account,
 	}, "id,account,password"); err != nil {
-		// 错误返回可以再次进行封装
-		return "", errors.New(err.Error())
+		return "", errors.New("账号或者密码错误")
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {

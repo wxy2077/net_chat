@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"net-chat/global"
 	"net-chat/logic"
@@ -19,7 +20,7 @@ func Login(c *gin.Context) {
 	}{}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		r.Fail(err)
+		r.Fail(errors.New("账号密码必填"))
 		return
 	}
 	token, err := logic.NewUserLogic().Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
