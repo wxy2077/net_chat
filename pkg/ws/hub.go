@@ -31,7 +31,7 @@ func (hub *Hub) Run() {
 	for {
 		select {
 		case client := <-hub.register:
-			fmt.Printf("上线注册:%d\n", client.userID)
+			fmt.Printf("online register:%d\n", client.userID)
 			//client上线，注册
 			hub.clients[client.userID] = client
 		case client := <-hub.unregister:

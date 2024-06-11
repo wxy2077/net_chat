@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	MsgTypeHeartBeat = "heartbeat"
+)
+
 var (
 	pongWait         = 60 * time.Second  //等待时间
 	pingPeriod       = 9 * pongWait / 10 //周期54s
@@ -92,8 +96,7 @@ func (c *Client) read() {
 			break
 		} else {
 			//换行符替换成空格，去除首尾空格
-			fmt.Printf("\n\n消息:%s", msg)
-
+			fmt.Printf("\nmsg:%s", msg)
 			c.receiveOption(msg)
 		}
 	}
@@ -161,7 +164,10 @@ func (c *Client) receiveOption(res []byte) {
 		global.Log.Errorf("用户:%d-数据格式错误%s\n", c.userID, err.Error())
 		return
 	}
-	// 默认发送消息
+	if msg.Type == MsgTypeHeartBeat {
+		//fmt.Printf("\nheartbeat...\n")
+		return
+	}
 	c.sendMsg(msg)
 
 }
@@ -173,6 +179,6 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 		msg.From = c.userID
 		client.Send <- msg
 	} else {
-		fmt.Printf("\n未找到此用户:%d", msg.To)
+		fmt.Printf("\nuser was not found:%d", msg.To)
 	}
 }
