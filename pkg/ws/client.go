@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net-chat/global"
+	"net-chat/model"
 	"net-chat/pkg/protocol"
 	"net/http"
 	"time"
@@ -174,11 +175,26 @@ func (c *Client) receiveOption(res []byte) {
 
 func (c *Client) sendMsg(msg *protocol.Message) {
 
+	userMsg := &model.Message{
+		SenderUserID:   msg.SenderUserId,
+		ReceiverUserID: msg.ReceiverUserId,
+		Content:        msg.Content,
+		ContentType:    msg.ContentType,
+	}
+
 	client, ok := HubServer.clients[msg.ReceiverUserId]
 	if ok {
 		msg.SenderUserId = c.userID
 		client.Send <- msg
+		userMsg.IsRead = model.Yes
 	} else {
 		fmt.Printf("\nuser was not found:%d", msg.ReceiverUserId)
+		userMsg.IsRead = model.No
 	}
+
+	go func() {
+		if err := userMsg.Create(global.DB); err != nil {
+			global.Log.Errorf("用户:%d-发送存储失败%s\n", c.userID, err.Error())
+		}
+	}()
 }

@@ -6,6 +6,11 @@ import (
 	"net-chat/pkg"
 )
 
+const (
+	Yes = 1
+	No  = 0
+)
+
 type User struct {
 	ID       int64       `gorm:"primaryKey" json:"id,omitempty"`
 	Account  string      `gorm:"column:account;type:varchar(191);default:'';comment:账号;" json:"account,omitempty"`

@@ -27,3 +27,7 @@ type Message struct {
 func (m *Message) TableName() string {
 	return "messages"
 }
+
+func (m *Message) Create(db *gorm.DB) error {
+	return db.Omit("id").Create(m).Error
+}
