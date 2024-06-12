@@ -18,6 +18,10 @@ type UserLogic interface {
 
 	UserInfo(db *gorm.DB, id int64) (user *model.User, err error)
 
+	FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*model.User, pagination *pkg.Pagination)
+
+	Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination)
+
 	// UserDepList 连接查询用户所在部门
 	UserDepList(db *gorm.DB, page int64) (list []*UserList, pagination *pkg.Pagination)
 
@@ -66,6 +70,41 @@ func (u *userLogic) UserInfo(db *gorm.DB, id int64) (user *model.User, err error
 		return nil, errors.New(err.Error())
 	}
 	return user, nil
+}
+
+func (u *userLogic) FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*model.User, pagination *pkg.Pagination) {
+	if uid == 0 {
+		return list, pagination
+	}
+
+	db = db.Model(&model.User{}).Joins("LEFT JOIN friends f ON (f.user_id = ? AND f.friend_user_id = users.id ) OR (f.user_id = users.id AND f.friend_user_id = ?)", uid, uid).
+		Where("f.status = ?", model.FriendStatusAccepted)
+
+	pagination = pkg.Paginate(&pkg.Param{
+		DB:      db,
+		Page:    page,
+		Limit:   pageSize,
+		OrderBy: []string{"id ASC"},
+	}, &list)
+
+	return list, pagination
+}
+
+func (u *userLogic) Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination) {
+	if uid == 0 || friendUid == 0 {
+		return list, pagination
+	}
+
+	db = db.Model(&model.Message{}).Where("(sender_user_id = ? AND receiver_user_id = ?) OR (sender_user_id = ? AND receiver_user_id = ?)", uid, friendUid, friendUid, uid)
+
+	pagination = pkg.Paginate(&pkg.Param{
+		DB:      db,
+		Page:    page,
+		Limit:   pageSize,
+		OrderBy: []string{"id ASC"},
+	}, &list)
+
+	return list, pagination
 }
 
 type UserList struct {

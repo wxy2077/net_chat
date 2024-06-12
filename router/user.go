@@ -15,9 +15,7 @@ func InitUserRouter(r *gin.RouterGroup) {
 
 	user.GET("/info", controller.UserInfo)
 
-	user.GET("/join", controller.JoinFunc)
+	user.GET("/friend", controller.FriendList)
 
-	user.GET("/preload", controller.PreloadFunc)
-
-	user.GET("/preloads", controller.PreloadsFunc)
+	user.GET("/message", controller.Message)
 }

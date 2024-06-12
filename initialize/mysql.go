@@ -2,13 +2,14 @@ package initialize
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net-chat/config"
 	"time"
 )
 
-func GormMysql(config *config.MySQL) *gorm.DB {
+func GormMysql(config *config.MySQL, model string) *gorm.DB {
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       fmt.Sprintf("%s/%s?charset=utf8mb4&parseTime=True&loc=Local", config.DNS, config.Database), // DSN data source name
 		DefaultStringSize:         256,                                                                                        // string 类型字段的默认长度
@@ -20,6 +21,9 @@ func GormMysql(config *config.MySQL) *gorm.DB {
 
 	_ = db.Use(&OpentracingPlugin{})
 
+	if model != gin.ReleaseMode {
+		db = db.Debug()
+	}
 	if err != nil {
 		return nil
 	} else {

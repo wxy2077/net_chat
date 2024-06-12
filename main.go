@@ -28,7 +28,7 @@ func init() {
 	}
 
 	global.Log = initialize.InitLogger(global.Config.Runtime.LogLevel)
-	global.DB = initialize.GormMysql(global.Config.MainMySQL)
+	global.DB = initialize.GormMysql(global.Config.MainMySQL, global.Config.Runtime.Mode)
 
 	initialize.InitWsHub()
 

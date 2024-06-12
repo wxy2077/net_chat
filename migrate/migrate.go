@@ -31,6 +31,11 @@ func main() {
 func autoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&model.User{},
+		&model.Friend{},
+		&model.Message{},
+		&model.Group{},
+		&model.GroupMember{},
+		&model.GroupMessage{},
 		// 其他模块补充在此...
 
 	)
