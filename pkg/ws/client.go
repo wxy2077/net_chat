@@ -174,11 +174,11 @@ func (c *Client) receiveOption(res []byte) {
 
 func (c *Client) sendMsg(msg *protocol.Message) {
 
-	client, ok := HubServer.clients[msg.To]
+	client, ok := HubServer.clients[msg.ReceiverUserId]
 	if ok {
-		msg.From = c.userID
+		msg.SenderUserId = c.userID
 		client.Send <- msg
 	} else {
-		fmt.Printf("\nuser was not found:%d", msg.To)
+		fmt.Printf("\nuser was not found:%d", msg.ReceiverUserId)
 	}
 }
