@@ -81,7 +81,7 @@ func Message(c *gin.Context) {
 			PageSize     int64 `form:"page_size"`
 		}{
 			Page:     pkg.DefaultPage,
-			PageSize: pkg.DefaultPageSize,
+			PageSize: 50,
 		}
 	)
 	if err := c.ShouldBindQuery(&req); err != nil {

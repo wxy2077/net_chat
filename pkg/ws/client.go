@@ -169,6 +169,7 @@ func (c *Client) receiveOption(res []byte) {
 		//fmt.Printf("\nheartbeat...\n")
 		return
 	}
+	msg.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	c.sendMsg(msg)
 
 }
@@ -177,18 +178,18 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 
 	userMsg := &model.Message{
 		SenderUserID:   msg.SenderUserId,
-		ReceiverUserID: msg.ReceiverUserId,
+		ReceiverUserID: msg.ReceiverTargetId,
 		Content:        msg.Content,
 		ContentType:    msg.ContentType,
 	}
 
-	client, ok := HubServer.clients[msg.ReceiverUserId]
+	client, ok := HubServer.clients[msg.ReceiverTargetId]
 	if ok {
 		msg.SenderUserId = c.userID
 		client.Send <- msg
 		userMsg.IsRead = model.Yes
 	} else {
-		fmt.Printf("\nuser was not found:%d", msg.ReceiverUserId)
+		fmt.Printf("\nuser was not found:%d", msg.ReceiverTargetId)
 		userMsg.IsRead = model.No
 	}
 
