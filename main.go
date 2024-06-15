@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net-chat/config"
 	"net-chat/global"
 	"net-chat/initialize"
 	"net-chat/pkg"
 	"net/http"
+	"runtime"
 	"time"
 )
 
@@ -47,6 +49,29 @@ func main() {
 		WriteTimeout:   20 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
+	fmt.Printf(`
+   _____ _           _   
+  / ____| |         | |  
+ | |    | |__   __ _| |_ 
+ | |    | '_ \ / _' | __|
+ | |____| | | | (_| | |_ 
+  \_____|_| |_|\__,_|\__|
+
+ Net-Chat Start
+ ------------------------------------------------
+ Config Path : %s
+ Go Version  : %s
+ Gin Version : %s
+ Run Mode    : %s
+ HttpPort    : %d
+ ------------------------------------------------
+`,
+		*configFile,
+		runtime.Version(),
+		gin.Version,
+		gin.Mode(),
+		global.Config.Runtime.HttpPort)
 
 	_ = server.ListenAndServe()
 }
