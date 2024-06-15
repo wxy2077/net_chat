@@ -8,6 +8,7 @@ import (
 	"net-chat/logic"
 	"net-chat/pkg"
 	"net/http"
+	"sort"
 )
 
 func Login(c *gin.Context) {
@@ -41,7 +42,18 @@ func UserInfo(c *gin.Context) {
 	var (
 		r   = pkg.NewResponse(c)
 		uid = c.GetInt64(global.UserID)
+		req = struct {
+			FriendUserID int64 `form:"friend_user_id"`
+		}{}
 	)
+	if err := c.ShouldBindQuery(&req); err != nil {
+		r.Fail(err)
+		return
+	}
+	// 优先查询好友信息
+	if req.FriendUserID != 0 {
+		uid = req.FriendUserID
+	}
 
 	user, err := logic.NewUserLogic().UserInfo(global.DB.WithContext(c.Request.Context()), uid)
 	if err != nil {
@@ -81,7 +93,7 @@ func Message(c *gin.Context) {
 			PageSize     int64 `form:"page_size"`
 		}{
 			Page:     pkg.DefaultPage,
-			PageSize: 50,
+			PageSize: 20,
 		}
 	)
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -90,6 +102,10 @@ func Message(c *gin.Context) {
 	}
 
 	list, pagination := logic.NewUserLogic().Message(global.DB.WithContext(c.Request.Context()), uid, req.FriendUserID, req.Page, req.PageSize)
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ID < list[j].ID
+	})
 
 	r.OkWithPage(http.StatusOK, list, pagination)
 }

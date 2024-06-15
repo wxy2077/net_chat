@@ -101,7 +101,7 @@ func (u *userLogic) Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (
 		DB:      db,
 		Page:    page,
 		Limit:   pageSize,
-		OrderBy: []string{"id ASC"},
+		OrderBy: []string{"id DESC"},
 	}, &list)
 
 	return list, pagination

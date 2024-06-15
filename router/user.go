@@ -15,7 +15,7 @@ func InitUserRouter(r *gin.RouterGroup) {
 
 	user.GET("/info", controller.UserInfo)
 
-	user.GET("/friend", controller.FriendList)
+	user.GET("/friend-list", controller.FriendList)
 
 	user.GET("/message", controller.Message)
 }
