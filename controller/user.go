@@ -109,31 +109,3 @@ func Message(c *gin.Context) {
 
 	r.OkWithPage(http.StatusOK, list, pagination)
 }
-
-func JoinFunc(c *gin.Context) {
-
-	r := pkg.NewResponse(c)
-
-	list, pagination := logic.NewUserLogic().UserDepList(global.DB.WithContext(c.Request.Context()), 1)
-
-	r.OkWithPage(http.StatusOK, list, pagination)
-}
-
-func PreloadFunc(c *gin.Context) {
-	var (
-		r = pkg.NewResponse(c)
-	)
-
-	list, pagination := logic.NewUserLogic().PreloadUserDep(global.DB.WithContext(c.Request.Context()), 1)
-
-	r.OkWithPage(http.StatusOK, list, pagination)
-}
-
-func PreloadsFunc(c *gin.Context) {
-	var (
-		r = pkg.NewResponse(c)
-	)
-	list, pagination := logic.NewUserLogic().PreloadUserDeps(global.DB.WithContext(c.Request.Context()), 1)
-
-	r.OkWithPage(http.StatusOK, list, pagination)
-}

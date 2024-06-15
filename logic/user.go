@@ -21,14 +21,6 @@ type UserLogic interface {
 	FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*model.User, pagination *pkg.Pagination)
 
 	Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination)
-
-	// UserDepList 连接查询用户所在部门
-	UserDepList(db *gorm.DB, page int64) (list []*UserList, pagination *pkg.Pagination)
-
-	// PreloadUserDep 预加载查询出所有的部门
-	PreloadUserDep(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination)
-
-	PreloadUserDeps(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination)
 }
 
 type userLogic struct {
@@ -102,61 +94,6 @@ func (u *userLogic) Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (
 		Page:    page,
 		Limit:   pageSize,
 		OrderBy: []string{"id DESC"},
-	}, &list)
-
-	return list, pagination
-}
-
-type UserList struct {
-	*model.User
-	Title string `json:"title"`
-}
-
-func (u *userLogic) UserDepList(db *gorm.DB, page int64) (list []*UserList, pagination *pkg.Pagination) {
-
-	db = db.Model(&model.User{}).Select("d.title,users.*").
-		Joins("LEFT JOIN department_users du ON du.user_id = users.id").
-		Joins("LEFT JOIN departments d ON d.dep_id = du.dep_id")
-
-	pagination = pkg.Paginate(&pkg.Param{
-		DB:      db,
-		Page:    page,
-		Limit:   15,
-		OrderBy: []string{"id desc"},
-	}, &list)
-
-	return list, pagination
-}
-
-func (u *userLogic) PreloadUserDep(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination) {
-	db = db.Model(&model.User{}).
-		Preload("DepartmentUser", func(tx *gorm.DB) *gorm.DB {
-			return tx.Preload("Department", func(tx *gorm.DB) *gorm.DB {
-				return tx.Select("id,title")
-			})
-		})
-
-	pagination = pkg.Paginate(&pkg.Param{
-		DB:      db,
-		Page:    page,
-		Limit:   15,
-		OrderBy: []string{"id desc"},
-	}, &list)
-
-	return list, pagination
-}
-
-func (u *userLogic) PreloadUserDeps(db *gorm.DB, page int64) (list []*model.User, pagination *pkg.Pagination) {
-
-	list = make([]*model.User, 0, 1)
-
-	db = db.Model(&model.User{}).Preload("Department")
-
-	pagination = pkg.Paginate(&pkg.Param{
-		DB:      db,
-		Page:    page,
-		Limit:   15,
-		OrderBy: []string{"id desc"},
 	}, &list)
 
 	return list, pagination
