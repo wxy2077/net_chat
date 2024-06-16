@@ -25,6 +25,8 @@ func GormMysql(config *config.MySQL, model string) *gorm.DB {
 		db = db.Debug()
 	}
 	if err != nil {
+		fmt.Printf("\nMySQL connect error: %v\n\n", err)
+		panic(err)
 		return nil
 	} else {
 		sqlDB, _ := db.DB()

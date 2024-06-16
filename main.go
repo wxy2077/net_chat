@@ -73,5 +73,7 @@ func main() {
 		gin.Mode(),
 		global.Config.Runtime.HttpPort)
 
-	_ = server.ListenAndServe()
+	if err := server.ListenAndServe(); err != nil {
+		fmt.Printf("err:%+v\n", err)
+	}
 }
