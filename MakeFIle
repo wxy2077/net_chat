@@ -1,0 +1,5 @@
+build:
+	docker build -t ichat-app .
+
+run:
+	docker run -d -p 8081:8081 --name ichat-gin-app ichat-gin-app
