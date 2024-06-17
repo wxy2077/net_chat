@@ -1,6 +1,6 @@
 ## 数据库迁移
 
-### 方法一(推荐): 使用go-migrate工具管理MySQL表
+### 方法一: 使用go-migrate工具管理MySQL表
 > 不用关心`model` gorm tag的书写规则，更直观精确的管理表，降低学习成本。
 
 - 1 安装使用
@@ -42,6 +42,7 @@ sql-migrate status -env=dev-mysql
 202206261030_add_index2user.sql
 ```
 
+但是我日常使用中，发现不同的分支使用同一个数据库，这样迁移就会有问题，也给作者提了 [issues](https://github.com/rubenv/sql-migrate/issues/264) 但是也无法避免。
 
 ### 方法二: gorm自带迁移功能迁移
 
@@ -49,3 +50,4 @@ sql-migrate status -env=dev-mysql
 ```
  go run migrate/migrate.go
 ```
+更多迁移方法间 [gorm.io](https://gorm.io/docs/migration.html#Auto-Migration) 官网
