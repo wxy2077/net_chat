@@ -58,7 +58,7 @@ func main() {
  | |____| | | | (_| | |_ 
   \_____|_| |_|\__,_|\__|
 
- Net-Chat Start
+ %s Start
  ------------------------------------------------
  Config Path : %s
  Go Version  : %s
@@ -67,6 +67,7 @@ func main() {
  HttpPort    : %d
  ------------------------------------------------
 `,
+		global.Config.Runtime.ServerName,
 		*configFile,
 		runtime.Version(),
 		gin.Version,

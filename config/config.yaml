@@ -8,11 +8,12 @@ Runtime:
   Mode: "debug"
   LogLevel: "info"
   HttpPort: 8081
-  JwtPublicKey: ./runtime/private.pem
-  JwtPrivateKey: ./runtime/public.pem
+  JwtPublicKey: ./config/private.pem
+  JwtPrivateKey: ./config/public.pem
   JaegerHostPort: 127.0.0.1:6831
 
 MainMySQL:
+#  DNS: root:123456@tcp(host.docker.internal:3306)
   DNS: root:123456@tcp(127.0.0.1:3306)
   Database: chat
   MaxIDleConn: 100
