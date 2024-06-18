@@ -1,18 +1,14 @@
 package ws
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"github.com/gorilla/websocket"
 	"net-chat/global"
 	"net-chat/model"
 	"net-chat/pkg/protocol"
 	"net/http"
 	"time"
-)
-
-const (
-	MsgTypeHeartBeat = "heartbeat"
 )
 
 var (
@@ -132,13 +128,13 @@ func (c *Client) write() {
 				return
 			} else {
 
-				binMsg, _ := json.Marshal(msg)
+				binMsg, _ := sonic.Marshal(msg)
 				_, _ = writer.Write(binMsg)
 				_, _ = writer.Write(newLine) //每发一条消息，都加一个换行符
 				//为了提升性能，如果c.send里还有消息，则趁这一次都写给前端
 				n := len(c.Send)
 				for i := 0; i < n; i++ {
-					binMsg, _ = json.Marshal(<-c.Send)
+					binMsg, _ = sonic.Marshal(<-c.Send)
 					_, _ = writer.Write(binMsg)
 					_, _ = writer.Write(newLine)
 				}
@@ -159,13 +155,13 @@ func (c *Client) write() {
 
 func (c *Client) receiveOption(res []byte) {
 	msg := &protocol.Message{}
-	err := json.Unmarshal(res, msg)
+	err := sonic.Unmarshal(res, msg)
 	if err != nil {
 
 		global.Log.Errorf("用户:%d-数据格式错误%s\n", c.userID, err.Error())
 		return
 	}
-	if msg.Type == MsgTypeHeartBeat {
+	if msg.Type == global.HeatBeat {
 		//fmt.Printf("\nheartbeat...\n")
 		return
 	}
@@ -187,10 +183,10 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 	if ok {
 		msg.SenderUserId = c.userID
 		client.Send <- msg
-		userMsg.IsRead = model.Yes
+		userMsg.IsRead = model.CommonYes
 	} else {
 		fmt.Printf("\nuser was not found:%d", msg.ReceiverTargetId)
-		userMsg.IsRead = model.No
+		userMsg.IsRead = model.CommonNo
 	}
 
 	go func() {
