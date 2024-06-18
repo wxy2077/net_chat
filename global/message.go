@@ -1,7 +1,7 @@
 package global
 
 const (
-	HeatBeat = "heat_beat"
+	HeatBeat = "heartbeat"
 	PONG     = "pong"
 
 	// 消息类型，单聊或者群聊

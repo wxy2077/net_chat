@@ -1,8 +1,10 @@
 package logic
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"net-chat/global"
@@ -21,15 +23,18 @@ type UserLogic interface {
 	FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*model.User, pagination *pkg.Pagination)
 
 	Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination)
+
+	UnreadMessage(db *gorm.DB, uid int64) (list []*model.Message)
 }
 
 type userLogic struct {
+	ctx *gin.Context
 }
 
 // NewUserLogic 接口controller层直接调用
 // 完成各种业务操作
-func NewUserLogic() UserLogic {
-	return &userLogic{}
+func NewUserLogic(c *gin.Context) UserLogic {
+	return &userLogic{ctx: c}
 }
 
 func (u *userLogic) Login(db *gorm.DB, account, password string) (token string, err error) {
@@ -97,4 +102,39 @@ func (u *userLogic) Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (
 	}, &list)
 
 	return list, pagination
+}
+
+func (u *userLogic) UnreadMessage(db *gorm.DB, uid int64) (list []*model.Message) {
+	if uid == 0 {
+		return list
+	}
+
+	msg := new(model.Message)
+	unreadList := msg.UnReadMsg(db, &model.MessageFilter{ReceiverUserID: uid})
+
+	unreadIdList := make([]int64, 0)
+	unreadCountMap := make(map[int64]int64)
+	for _, v := range unreadList {
+		unreadIdList = append(unreadIdList, v.LastMessageID)
+		unreadCountMap[v.LastMessageID] = v.UnreadCount
+	}
+
+	list = msg.FindByIDs(db, &model.MessageFilter{IDs: unreadIdList})
+
+	for _, v := range list {
+		if _, ok := unreadCountMap[v.ID]; ok {
+			v.UnreadCount = unreadCountMap[v.ID]
+		}
+	}
+
+	// 更新为已读
+	go func() {
+		if err := msg.UpdateRead(global.DB, &model.MessageFilter{IDs: unreadIdList}); err != nil {
+			global.Log.
+				WithFields(logrus.Fields{"ids": unreadIdList}).
+				Errorf("update error:%+v", err)
+		}
+	}()
+
+	return list
 }

@@ -24,7 +24,7 @@ func Login(c *gin.Context) {
 		r.Fail(errors.New("账号密码必填"))
 		return
 	}
-	token, err := logic.NewUserLogic().Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
+	token, err := logic.NewUserLogic(c).Login(global.DB.WithContext(c.Request.Context()), req.Username, req.Password)
 	if err != nil {
 		global.Log.WithContext(c.Request.Context()).
 			WithFields(logrus.Fields{"username": req.Username}).
@@ -55,7 +55,7 @@ func UserInfo(c *gin.Context) {
 		uid = req.FriendUserID
 	}
 
-	user, err := logic.NewUserLogic().UserInfo(global.DB.WithContext(c.Request.Context()), uid)
+	user, err := logic.NewUserLogic(c).UserInfo(global.DB.WithContext(c.Request.Context()), uid)
 	if err != nil {
 		r.Fail(err)
 		return
@@ -78,7 +78,7 @@ func FriendList(c *gin.Context) {
 	)
 	_ = c.ShouldBindQuery(&req)
 
-	list, pagination := logic.NewUserLogic().FriendList(global.DB.WithContext(c.Request.Context()), uid, req.Page, req.PageSize)
+	list, pagination := logic.NewUserLogic(c).FriendList(global.DB.WithContext(c.Request.Context()), uid, req.Page, req.PageSize)
 
 	r.OkWithPage(http.StatusOK, list, pagination)
 }
@@ -101,11 +101,22 @@ func Message(c *gin.Context) {
 		return
 	}
 
-	list, pagination := logic.NewUserLogic().Message(global.DB.WithContext(c.Request.Context()), uid, req.FriendUserID, req.Page, req.PageSize)
+	list, pagination := logic.NewUserLogic(c).Message(global.DB.WithContext(c.Request.Context()), uid, req.FriendUserID, req.Page, req.PageSize)
 
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].ID < list[j].ID
 	})
 
 	r.OkWithPage(http.StatusOK, list, pagination)
+}
+
+func UnreadMessage(c *gin.Context) {
+	var (
+		r   = pkg.NewResponse(c)
+		uid = c.GetInt64(global.UserID)
+	)
+
+	list := logic.NewUserLogic(c).UnreadMessage(global.DB.WithContext(c.Request.Context()), uid)
+
+	r.OK(http.StatusOK, list)
 }

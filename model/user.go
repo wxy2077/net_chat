@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	Yes = 1
-	No  = 0
+	CommonYes            = 1
+	CommonNo             = 0
+	CommonUserQueryField = "id,account,username,phone,avatar,email"
 )
 
 type User struct {

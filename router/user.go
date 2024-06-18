@@ -18,4 +18,6 @@ func InitUserRouter(r *gin.RouterGroup) {
 	user.GET("/friend-list", controller.FriendList)
 
 	user.GET("/message", controller.Message)
+
+	user.GET("/unread-message", controller.UnreadMessage)
 }
