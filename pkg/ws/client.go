@@ -179,7 +179,8 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 		ContentType:    msg.ContentType,
 	}
 
-	client, ok := HubServer.clients[msg.ReceiverTargetId]
+	client, ok := HubServer.GetClient(msg.ReceiverTargetId)
+
 	if ok {
 		msg.SenderUserId = c.userID
 		client.Send <- msg
