@@ -2,7 +2,6 @@ package ws
 
 import (
 	"fmt"
-	"net-chat/pkg/protocol"
 	"sync"
 )
 
@@ -11,9 +10,9 @@ var HubServer = newHub()
 type Hub struct {
 	clients    map[int64]*Client //维护所有的client
 	mutex      *sync.Mutex
-	broadcast  chan *protocol.Message //广播消息
-	register   chan *Client           //注册
-	unregister chan *Client           //注销
+	broadcast  chan []byte  //广播消息
+	register   chan *Client //注册
+	unregister chan *Client //注销
 
 }
 
@@ -21,7 +20,7 @@ func newHub() *Hub {
 	return &Hub{
 		mutex:      &sync.Mutex{},
 		clients:    make(map[int64]*Client),
-		broadcast:  make(chan *protocol.Message), //同步管道，确保hub消息不堆积，同时多个client给hub发数据会阻塞
+		broadcast:  make(chan []byte), //同步管道，确保hub消息不堆积，同时多个client给hub发数据会阻塞
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 	}

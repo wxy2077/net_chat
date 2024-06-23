@@ -2,8 +2,8 @@ package ws
 
 import (
 	"fmt"
-	"github.com/bytedance/sonic"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 	"net-chat/global"
 	"net-chat/model"
 	"net-chat/pkg/protocol"
@@ -14,8 +14,9 @@ import (
 var (
 	pongWait         = 60 * time.Second  //等待时间
 	pingPeriod       = 9 * pongWait / 10 //周期54s
-	maxMsgSize int64 = 512               //消息最大长度
+	maxMsgSize int64 = 1024              //消息最大长度
 	writeWait        = 10 * time.Second  //
+	bufferSize       = 1024              //
 
 )
 var (
@@ -24,8 +25,8 @@ var (
 )
 var upGrader = websocket.Upgrader{
 	HandshakeTimeout: 2 * time.Second, //握手超时时间
-	ReadBufferSize:   1024,            //读缓冲大小
-	WriteBufferSize:  1024,            //写缓冲大小
+	ReadBufferSize:   bufferSize,      //读缓冲大小
+	WriteBufferSize:  bufferSize,      //写缓冲大小
 	CheckOrigin:      func(r *http.Request) bool { return true },
 	Error:            func(w http.ResponseWriter, r *http.Request, status int, reason error) {},
 }
@@ -39,10 +40,9 @@ func ServeWs(w http.ResponseWriter, r *http.Request, uid int64) {
 
 	fmt.Printf("connect to client %s, uid:%d\n", conn.RemoteAddr().String(), uid)
 
-	//每来一个前端请求，就会创建一个client
 	client := &Client{
 		conn:   conn,
-		Send:   make(chan *protocol.Message),
+		Send:   make(chan []byte, bufferSize),
 		userID: uid,
 	}
 
@@ -56,7 +56,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request, uid int64) {
 }
 
 type Client struct {
-	Send   chan *protocol.Message
+	Send   chan []byte
 	conn   *websocket.Conn
 	userID int64
 }
@@ -65,7 +65,6 @@ func (c *Client) read() {
 	defer func() {
 		//hub中注销client
 		HubServer.unregister <- c
-		//global.Log.Infof("uid:%d-client %s disconnect", c.userID, c.conn.RemoteAddr().String())
 		//关闭websocket管道
 		_ = c.conn.Close()
 	}()
@@ -93,7 +92,6 @@ func (c *Client) read() {
 			break
 		} else {
 			//换行符替换成空格，去除首尾空格
-			fmt.Printf("\nmsg:%s", msg)
 			c.receiveOption(msg)
 		}
 	}
@@ -124,48 +122,48 @@ func (c *Client) write() {
 			//10秒内必须把信息写给前端（写到websocket连接里去），否则就关闭连接
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			//通过NextWriter创建一个新的writer，主要是为了确保上一个writer已经被关闭，即它想写的内容已经flush到conn里去
-			if writer, err := c.conn.NextWriter(websocket.TextMessage); err != nil {
+
+			if writer, err := c.conn.NextWriter(websocket.BinaryMessage); err != nil {
 				return
 			} else {
-
-				binMsg, _ := sonic.Marshal(msg)
-				_, _ = writer.Write(binMsg)
+				_, _ = writer.Write(msg)
 				_, _ = writer.Write(newLine) //每发一条消息，都加一个换行符
 				//为了提升性能，如果c.send里还有消息，则趁这一次都写给前端
 				n := len(c.Send)
 				for i := 0; i < n; i++ {
-					binMsg, _ = sonic.Marshal(<-c.Send)
-					_, _ = writer.Write(binMsg)
+					_, _ = writer.Write(<-c.Send)
 					_, _ = writer.Write(newLine)
 				}
 				if err = writer.Close(); err != nil {
-					return //结束一切
+					return
 				}
 			}
 		case <-ticker.C:
-			//fmt.Printf("\nsend ping message\n")
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			//心跳保持，给浏览器发一个PingMessage，等待浏览器返回PongMessage
+			// keep alive ping, wait for pong
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return //写websocket连接失败，说明连接出问题了，该c可以over了
+				// write to client error, close connection
+				return
 			}
 		}
 	}
 }
 
 func (c *Client) receiveOption(res []byte) {
-	msg := &protocol.Message{}
-	err := sonic.Unmarshal(res, msg)
-	if err != nil {
 
-		global.Log.Errorf("用户:%d-数据格式错误%s\n", c.userID, err.Error())
+	msg := &protocol.Message{}
+	err := proto.Unmarshal(res, msg)
+	if err != nil {
+		global.Log.Errorf("user:%d->unmarshal message error: %v\n", c.userID, err)
 		return
 	}
+
 	if msg.Type == global.HeatBeat {
-		//fmt.Printf("\nheartbeat...\n")
 		return
 	}
-	msg.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+	if msg.CreatedAt == "" {
+		msg.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+	}
 	c.sendMsg(msg)
 
 }
@@ -181,18 +179,29 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 
 	client, ok := HubServer.GetClient(msg.ReceiverTargetId)
 
+	msg = &protocol.Message{
+		SenderUserId:     msg.SenderUserId,
+		ReceiverTargetId: msg.ReceiverTargetId,
+		Content:          msg.Content,
+		ContentType:      msg.ContentType,
+		Type:             msg.Type,
+	}
+
+	binMsg, _ := proto.Marshal(msg)
+
 	if ok {
 		msg.SenderUserId = c.userID
-		client.Send <- msg
+		client.Send <- binMsg
 		userMsg.IsRead = model.CommonYes
 	} else {
 		fmt.Printf("\nuser was not found:%d", msg.ReceiverTargetId)
 		userMsg.IsRead = model.CommonNo
 	}
 
+	// If it has a lot of data, you can consider using a queue to store it.
 	go func() {
 		if err := userMsg.Create(global.DB); err != nil {
-			global.Log.Errorf("用户:%d-发送存储失败%s\n", c.userID, err.Error())
+			global.Log.Errorf("user:%d-save message failed:%s\n", c.userID, err.Error())
 		}
 	}()
 }
