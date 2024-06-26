@@ -37,6 +37,10 @@ func (m *Message) Create(db *gorm.DB) error {
 	return db.Omit("id").Create(m).Error
 }
 
+func (m *Message) BatchCreate(db *gorm.DB, list []*Message) error {
+	return db.Model(m).Omit("id").CreateInBatches(&list, 1000).Error
+}
+
 type MessageFilter struct {
 	IDs            []int64
 	SenderUserID   int64
@@ -124,7 +128,7 @@ func (m *Message) List(db *gorm.DB, filter *MessageFilter) (list []*Message, cou
 		DB:      db,
 		Page:    filter.Page,
 		Limit:   filter.PageSize,
-		OrderBy: []string{"id DESC"},
+		OrderBy: []string{"created_at DESC"},
 	}, &list)
 	return
 }

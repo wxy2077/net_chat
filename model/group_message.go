@@ -24,3 +24,7 @@ type GroupMessage struct {
 func (g *GroupMessage) TableName() string {
 	return "group_messages"
 }
+
+func (g *GroupMessage) BatchCreate(db *gorm.DB, list []*GroupMessage) error {
+	return db.Model(g).Omit("id").CreateInBatches(&list, 1000).Error
+}

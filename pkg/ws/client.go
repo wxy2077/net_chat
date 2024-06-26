@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"net-chat/global"
 	"net-chat/model"
+	"net-chat/pkg"
 	"net-chat/pkg/protocol"
 	"net/http"
 	"time"
@@ -172,27 +173,36 @@ func (c *Client) receiveOption(res []byte) {
 
 func (c *Client) sendMsg(msg *protocol.Message) {
 
-	userMsg := &model.Message{
+	currentMsg := &model.Message{
 		SenderUserID:   msg.SenderUserId,
 		ReceiverUserID: msg.ReceiverTargetId,
 		Content:        msg.Content,
 		ContentType:    msg.ContentType,
+		CreatedAt:      &pkg.LocalTimeX{},
 	}
+	currentMsg.CreatedAt.SetValid(time.Now())
 
 	client, ok := HubServer.GetClient(msg.ReceiverTargetId)
 
 	if ok {
 		msg.SenderUserId = c.userID
 		client.Send <- msg
-		userMsg.IsRead = model.CommonYes
+		currentMsg.IsRead = model.CommonYes
 	} else {
 		fmt.Printf("\nuser was not found:%d", msg.ReceiverTargetId)
-		userMsg.IsRead = model.CommonNo
+		currentMsg.IsRead = model.CommonNo
 	}
+	// TODO 向用户发送确认消息, 确保数据插入成功
 
+	// 减少数据插入频率 改用channel 批量插入
 	go func() {
-		if err := userMsg.Create(global.DB); err != nil {
-			global.Log.Errorf("用户:%d-发送存储失败%s\n", c.userID, err.Error())
+		if msg.MessageType == global.MessageTypeUser {
+			MessageChannel <- currentMsg
+		} else if msg.MessageType == global.MessageTypeGroup {
+			//GroupMessageChannel <- currentMsg
 		}
+		//if err := userMsg.Create(global.DB); err != nil {
+		//	global.Log.Errorf("用户:%d-发送存储失败%s\n", c.userID, err.Error())
+		//}
 	}()
 }

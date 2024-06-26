@@ -33,6 +33,7 @@ func init() {
 	global.DB = initialize.GormMysql(global.Config.MainMySQL, global.Config.Runtime.Mode)
 
 	initialize.InitWsHub()
+	initialize.InitConsumeMsg()
 
 	pkg.PwdJwt.LoadConfig(global.Config.Runtime.JwtPrivateKey, global.Config.Runtime.JwtPublicKey)
 
