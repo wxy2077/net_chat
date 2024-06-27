@@ -20,6 +20,9 @@ type Message struct {
 
 	IsRead int64 `gorm:"column:is_read;type:tinyint(4);" json:"is_read"`
 
+	// 前端生成的uuid
+	MsgID string `gorm:"column:msg_id;type:varchar(36);" json:"msg_id"`
+
 	User *User `gorm:"foreignKey:SenderUserID;references:ID" json:"sender_user,omitempty"`
 
 	CreatedAt *pkg.LocalTimeX `json:"created_at,omitempty"`

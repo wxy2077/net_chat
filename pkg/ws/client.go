@@ -174,6 +174,7 @@ func (c *Client) receiveOption(res []byte) {
 func (c *Client) sendMsg(msg *protocol.Message) {
 
 	currentMsg := &model.Message{
+		MsgID:          msg.MsgId,
 		SenderUserID:   msg.SenderUserId,
 		ReceiverUserID: msg.ReceiverTargetId,
 		Content:        msg.Content,
@@ -192,7 +193,15 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 		fmt.Printf("\nuser was not found:%d", msg.ReceiverTargetId)
 		currentMsg.IsRead = model.CommonNo
 	}
-	// TODO 向用户发送确认消息, 确保数据插入成功
+	// 向用户发送确认消息, 确保数据插入成功
+	userClient, ok := HubServer.GetClient(msg.SenderUserId)
+	if ok {
+		receiveMsg := &protocol.Message{
+			MsgId:       msg.MsgId,
+			ReceiptType: model.CommonYes,
+		}
+		userClient.Send <- receiveMsg
+	}
 
 	// 减少数据插入频率 改用channel 批量插入
 	go func() {
@@ -201,8 +210,5 @@ func (c *Client) sendMsg(msg *protocol.Message) {
 		} else if msg.MessageType == global.MessageTypeGroup {
 			//GroupMessageChannel <- currentMsg
 		}
-		//if err := userMsg.Create(global.DB); err != nil {
-		//	global.Log.Errorf("用户:%d-发送存储失败%s\n", c.userID, err.Error())
-		//}
 	}()
 }
