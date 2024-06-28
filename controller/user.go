@@ -88,9 +88,10 @@ func Message(c *gin.Context) {
 		r   = pkg.NewResponse(c)
 		uid = c.GetInt64(global.UserID)
 		req = struct {
-			FriendUserID int64 `form:"friend_user_id"`
-			Page         int64 `form:"page"`
-			PageSize     int64 `form:"page_size"`
+			FriendUserID int64  `form:"friend_user_id"`
+			MsgID        string `form:"msg_id"`
+			Page         int64  `form:"page"`
+			PageSize     int64  `form:"page_size"`
 		}{
 			Page:     pkg.DefaultPage,
 			PageSize: 20,
@@ -101,7 +102,7 @@ func Message(c *gin.Context) {
 		return
 	}
 
-	list, pagination := logic.NewUserLogic(c).Message(global.DB.WithContext(c.Request.Context()), uid, req.FriendUserID, req.Page, req.PageSize)
+	list, pagination := logic.NewUserLogic(c).Message(global.DB.WithContext(c.Request.Context()), uid, req.FriendUserID, req.MsgID, req.Page, req.PageSize)
 
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].ID < list[j].ID

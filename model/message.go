@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"github.com/guregu/null"
 	"gorm.io/gorm"
 	"net-chat/pkg"
@@ -48,7 +49,9 @@ type MessageFilter struct {
 	IDs            []int64
 	SenderUserID   int64
 	ReceiverUserID int64
+	MsgID          string
 	IsRead         null.Int
+	Columns        string
 	LoadUser       bool
 	OnlyCount      bool
 	Page           int64
@@ -99,6 +102,29 @@ func (m *Message) UnReadMsg(db *gorm.DB, filter *MessageFilter) (list []*UnReadM
 		Group("sender_user_id").Scan(&list)
 
 	return
+}
+
+func (m *Message) Single(db *gorm.DB, filter *MessageFilter) error {
+
+	db = db.Model(&Message{})
+	if filter.SenderUserID == 0 && filter.ReceiverUserID == 0 {
+		// 防止空条件查询
+		return errors.New("filter is empty")
+	}
+	if filter.MsgID != "" {
+		db = db.Where("msg_id = ?", filter.MsgID)
+	}
+
+	if filter.SenderUserID != 0 {
+		db = db.Where("sender_user_id = ?", filter.SenderUserID)
+	}
+	if filter.ReceiverUserID != 0 {
+		db = db.Where("receiver_user_id = ?", filter.ReceiverUserID)
+	}
+	if filter.Columns != "" {
+		db = db.Select(filter.Columns)
+	}
+	return db.First(&m).Error
 }
 
 func (m *Message) List(db *gorm.DB, filter *MessageFilter) (list []*Message, count int64, pagination *pkg.Pagination) {

@@ -22,7 +22,7 @@ type UserLogic interface {
 
 	FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*model.User, pagination *pkg.Pagination)
 
-	Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination)
+	Message(db *gorm.DB, uid, friendUid int64, msgId string, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination)
 
 	UnreadMessage(db *gorm.DB, uid int64) (list []*model.Message)
 }
@@ -87,12 +87,22 @@ func (u *userLogic) FriendList(db *gorm.DB, uid, page, pageSize int64) (list []*
 	return list, pagination
 }
 
-func (u *userLogic) Message(db *gorm.DB, uid, friendUid, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination) {
-	if uid == 0 || friendUid == 0 {
+func (u *userLogic) Message(db *gorm.DB, uid, friendUid int64, msgId string, page, pageSize int64) (list []*model.Message, pagination *pkg.Pagination) {
+	if uid == 0 || friendUid == 0 || msgId == "" {
+		return list, pagination
+	}
+	msg := new(model.Message)
+	err := msg.Single(db, &model.MessageFilter{SenderUserID: uid, ReceiverUserID: friendUid, MsgID: msgId, Columns: "id"})
+	if err != nil {
+		return list, pagination
+	}
+	if msg.ID == 0 {
 		return list, pagination
 	}
 
-	db = db.Model(&model.Message{}).Where("(sender_user_id = ? AND receiver_user_id = ?) OR (sender_user_id = ? AND receiver_user_id = ?)", uid, friendUid, friendUid, uid)
+	db = db.Model(&model.Message{}).
+		Where("id < ?", msg.ID).
+		Where("(sender_user_id = ? AND receiver_user_id = ?) OR (sender_user_id = ? AND receiver_user_id = ?)", uid, friendUid, friendUid, uid)
 
 	pagination = pkg.Paginate(&pkg.Param{
 		DB:      db,
